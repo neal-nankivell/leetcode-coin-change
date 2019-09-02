@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Answer
 {
@@ -17,7 +19,39 @@ namespace Answer
          */
         public int CoinChange(int[] coins, int amount)
         {
-            throw new NotImplementedException();
+            // O(log(N)) where N is the number of coins
+            Array.Sort(coins);
+
+            var remaining = amount;
+            var count = 0;
+
+            // Greedy solution, will fail on some edge cases
+            for (int i = coins.Length - 1; i >= 0; i--)
+            {
+                while (remaining >= 0)
+                {
+                    remaining -= coins[i];
+                    count++;
+                }
+
+                if (remaining < 0)
+                {
+                    remaining += coins[i];
+                    count--;
+                }
+
+                if (remaining == 0)
+                {
+                    break;
+                }
+            }
+
+            if (remaining != 0)
+            {
+                return -1;
+            }
+
+            return count;
         }
     }
 }
