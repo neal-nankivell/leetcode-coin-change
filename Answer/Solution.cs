@@ -19,39 +19,57 @@ namespace Answer
          */
         public int CoinChange(int[] coins, int amount)
         {
-            // O(log(N)) where N is the number of coins
-            Array.Sort(coins);
-
-            var remaining = amount;
-            var count = 0;
-
-            // Greedy solution, will fail on some edge cases
-            for (int i = coins.Length - 1; i >= 0; i--)
+            if (amount == 0)
             {
-                while (remaining >= 0)
+                return 0;
+            }
+
+            var filteredSortedCoins =
+                coins.Where(coin => coin <= amount)
+                .ToArray();
+            Array.Sort(filteredSortedCoins);
+
+            Stack<StackItem> stack = new Stack<StackItem>();
+            foreach (var coin in filteredSortedCoins)
+            {
+                stack.Push(
+                    new StackItem
+                    {
+                        Value = coin,
+                        NumberOfCoins = 1
+                    });
+            }
+
+            while (stack.Count > 0)
+            {
+                var maxItem = stack.Pop();
+                if (maxItem.Value == amount)
                 {
-                    remaining -= coins[i];
-                    count++;
+                    return maxItem.NumberOfCoins;
                 }
 
-                if (remaining < 0)
+                foreach (var coin in filteredSortedCoins)
                 {
-                    remaining += coins[i];
-                    count--;
-                }
-
-                if (remaining == 0)
-                {
-                    break;
+                    if (maxItem.Value + coin <= amount)
+                    {
+                        stack.Push(
+                            new StackItem
+                            {
+                                Value = maxItem.Value + coin,
+                                NumberOfCoins = maxItem.NumberOfCoins + 1,
+                            });
+                    }
                 }
             }
 
-            if (remaining != 0)
-            {
-                return -1;
-            }
+            return -1;
+        }
 
-            return count;
+        private class StackItem
+        {
+            public int Value { get; set; }
+
+            public int NumberOfCoins { get; set; }
         }
     }
 }
