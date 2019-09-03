@@ -19,51 +19,45 @@ namespace Answer
          */
         public int CoinChange(int[] coins, int amount)
         {
-            if (amount == 0)
-            {
-                return 0;
-            }
-            if (coins.Length == 0)
-            {
-                return -1;
-            }
+            if (amount == 0) { return 0; }
+            if (coins.Length == 0) { return -1; }
 
             HashSet<int> coinsHash = new HashSet<int>(
                 coins.Where(coin => coin <= amount)
             );
 
-            int steps = 1;
+            if (coinsHash.Contains(amount)) { return 1; }
 
-            HashSet<int> candidates = new HashSet<int>(
-                coinsHash
-                    .Select(coin => amount - coin)
-                    .Where(value => value >= 0));
+            int coinsUsed = 1;
 
-            HashSet<int> alreadySeen = new HashSet<int>();
+            List<int> amountsAfterUsingXCoins = coinsHash
+                .Select(coin => amount - coin)
+                .Where(value => value >= 0)
+                .ToList();
 
-            while (candidates.Count > 0)
+            HashSet<int> amountsAlreadySeen = new HashSet<int>();
+
+            while (amountsAfterUsingXCoins.Count > 0)
             {
-                HashSet<int> nextCandidates = new HashSet<int>();
+                List<int> nextAmounts = new List<int>();
 
-                foreach (int candidate in candidates)
+                foreach (int candidate in amountsAfterUsingXCoins)
                 {
-                    if (candidate == 0)
+                    if (!amountsAlreadySeen.Contains(candidate))
                     {
-                        return steps;
+                        if (candidate == 0) { return coinsUsed; }
+                        amountsAlreadySeen.Add(candidate);
+
+                        nextAmounts.AddRange(
+                            coinsHash
+                                .Select(coin => candidate - coin)
+                                .Where(v => v >= 0 && !amountsAlreadySeen.Contains(v))
+                        );
                     }
-                    alreadySeen.Add(candidate);
-                    foreach (var newCandidate in coinsHash
-                            .Select(coin => candidate - coin)
-                            .Where(v => v >= 0)
-                            .Where(v => !alreadySeen.Contains(v))
-                            .Where(v => !nextCandidates.Contains(v)))
-                    {
-                        nextCandidates.Add(newCandidate);
-                    };
                 }
 
-                steps++;
-                candidates = nextCandidates;
+                coinsUsed++;
+                amountsAfterUsingXCoins = nextAmounts;
             }
 
             return -1;
