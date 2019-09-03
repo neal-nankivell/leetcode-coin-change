@@ -23,53 +23,50 @@ namespace Answer
             {
                 return 0;
             }
-
-            var filteredSortedCoins =
-                coins.Where(coin => coin <= amount)
-                .ToArray();
-            Array.Sort(filteredSortedCoins);
-
-            Stack<StackItem> stack = new Stack<StackItem>();
-            foreach (var coin in filteredSortedCoins)
+            if (coins.Length == 0)
             {
-                stack.Push(
-                    new StackItem
-                    {
-                        Value = coin,
-                        NumberOfCoins = 1
-                    });
+                return -1;
             }
 
-            while (stack.Count > 0)
+            HashSet<int> coinsHash = new HashSet<int>(
+                coins.Where(coin => coin <= amount)
+            );
+
+            int steps = 1;
+
+            HashSet<int> candidates = new HashSet<int>(
+                coinsHash
+                    .Select(coin => amount - coin)
+                    .Where(value => value >= 0));
+
+            HashSet<int> alreadySeen = new HashSet<int>();
+
+            while (candidates.Count > 0)
             {
-                var maxItem = stack.Pop();
-                if (maxItem.Value == amount)
+                HashSet<int> nextCandidates = new HashSet<int>();
+
+                foreach (int candidate in candidates)
                 {
-                    return maxItem.NumberOfCoins;
+                    if (candidate == 0)
+                    {
+                        return steps;
+                    }
+                    alreadySeen.Add(candidate);
+                    foreach (var newCandidate in coinsHash
+                            .Select(coin => candidate - coin)
+                            .Where(v => v >= 0)
+                            .Where(v => !alreadySeen.Contains(v))
+                            .Where(v => !nextCandidates.Contains(v)))
+                    {
+                        nextCandidates.Add(newCandidate);
+                    };
                 }
 
-                foreach (var coin in filteredSortedCoins)
-                {
-                    if (maxItem.Value + coin <= amount)
-                    {
-                        stack.Push(
-                            new StackItem
-                            {
-                                Value = maxItem.Value + coin,
-                                NumberOfCoins = maxItem.NumberOfCoins + 1,
-                            });
-                    }
-                }
+                steps++;
+                candidates = nextCandidates;
             }
 
             return -1;
-        }
-
-        private class StackItem
-        {
-            public int Value { get; set; }
-
-            public int NumberOfCoins { get; set; }
         }
     }
 }

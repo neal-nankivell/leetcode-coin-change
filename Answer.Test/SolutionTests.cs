@@ -40,6 +40,11 @@ namespace Tests
             12,
             ExpectedResult = 2
         )]
+        [TestCase(
+            new[] { 1 },
+            1,
+            ExpectedResult = 1
+        )]
         public int CoinChange(int[] coins, int amount)
         {
             var sut = new Solution();
